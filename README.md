@@ -98,26 +98,24 @@ Input and state protections:
 | HashMap / TreeMap | Stock per commodity, vehicles, requests by ID | Fast lookup by name or ID |
 | ArrayList | Dispatch and receipt history, pending list | Keeps insertion order for display |
 
-## Database-backed website
+## Database-backed website (Supabase)
 
 The browser version keeps the same control-center navbar and screens as the
-desktop application, but its editable data is stored in MySQL/MariaDB through
-the PHP API.
+desktop application, but connects directly to **Supabase (PostgreSQL)** without
+needing PHP, Apache, or MySQL.
 
-1. Start **Apache** and **MySQL** in XAMPP.
-2. Import `database/schema.sql` in phpMyAdmin, then import `database/seed.sql`.
-3. Open [http://localhost/SupplyChain/web/](http://localhost/SupplyChain/web/).
-4. Select a warehouse row, choose **Update selected warehouse stock**, and
-   enter the new quantity. The `update_warehouse` API action writes the value
-   to the `warehouses` table.
-5. Submit a new request from **New Request**. It is saved in
+1. Create a project at [Supabase](https://supabase.com/).
+2. Open the **SQL Editor** in your Supabase dashboard and run the script in
+   `database/supabase_schema.sql` (creates tables, RLS policies, and seed data).
+3. Open `web/index.html` in your browser (via any static web server, VS Code Live Server, or directly).
+4. Click **⚙️ Supabase Settings** (or edit `web/supabaseConfig.js`) to enter:
+   - **Project URL** (from Supabase *Project Settings > API*)
+   - **Public Anon Key** (from Supabase *Project Settings > API*)
+5. Select a warehouse row, choose **Update selected warehouse stock**, and
+   enter the new quantity. This updates the `warehouses` table in Supabase.
+6. Submit a new request from **New Request**. It is inserted into
    `delivery_requests` and `request_items`.
-6. Use **Process next request**. The `process_request` transaction checks
-   complete stock, deducts all requested commodities together, and changes the
-   request to `DISPATCHED`.
-7. Confirm a receipt. The `confirm_receipt` transaction adds the commodities
-   to the shop and changes the request to `DELIVERED`.
-
-The PHP connection settings are in `web/config.php`. The current default is
-the XAMPP MariaDB setup (`root` with an empty password); change it if the local
-database has a password.
+7. Use **Process next request**. It checks complete stock, deducts all
+   commodities from the warehouse in Supabase, and changes the request to `DISPATCHED`.
+8. Confirm a receipt. It adds the commodities to the shop and updates
+   the request status to `DELIVERED`.

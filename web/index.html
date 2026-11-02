@@ -3,132 +3,862 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Valam | Public Distribution Supply Chain</title>
+    <title>Valam Supply Chain | Logistics Command Center</title>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseConfig.js"></script>
 </head>
 <body>
-<header>
-    <h1>VALAM&nbsp; / &nbsp;SUPPLY CHAIN CONTROL CENTER</h1>
-    <p>Public Distribution System&nbsp; • &nbsp;Inventory, dispatch and route management</p>
-    <button id="reset-button">Reset demo</button>
-</header>
 
-<nav class="tabs">
-    <button class="tab active" data-section="dashboard">Dashboard</button>
-    <button class="tab" data-section="warehouses">Warehouses</button>
-    <button class="tab" data-section="shops">Fair Price Shops</button>
-    <button class="tab" data-section="vehicles">Vehicles</button>
-    <button class="tab" data-section="requests">Requests</button>
-    <button class="tab" data-section="new-request">New Request</button>
-    <button class="tab" data-section="dispatches">Dispatch &amp; Receipts</button>
-    <button class="tab" data-section="history">History</button>
-</nav>
-
-<main>
-    <section id="dashboard" class="section active">
-        <div class="cards">
-            <div class="card"><strong>Warehouses</strong><b>2</b><small>Central + Regional</small></div>
-            <div class="card"><strong>Fair price shops</strong><b>8</b><small>Shop network</small></div>
-            <div class="card"><strong>Delivery vehicles</strong><b>3</b><small>2 vans + 1 truck</small></div>
-            <div class="card"><strong>Road locations</strong><b>14</b><small>Weighted graph</small></div>
-        </div>
-        <pre id="console-output"></pre>
-    </section>
-
-    <section id="requests" class="section">
-        <div class="section-heading">
-            <h2>Delivery Requests</h2>
-            <div><button id="process-next">Process next request</button><button id="process-all">Process all requests</button><button id="change-urgency">Change selected urgency</button></div>
-        </div>
-        <div class="table-scroll">
-            <table>
-                <thead><tr><th>Request ID</th><th>Shop</th><th>Urgency</th><th>Items</th><th>Total kg</th><th>Status</th><th>Details</th></tr></thead>
-                <tbody id="request-rows"></tbody>
-            </table>
-        </div>
-    </section>
-
-    <section id="warehouses" class="section">
-        <div class="table-scroll">
-            <table>
-                <thead><tr><th>ID</th><th>Name</th><th>Rice (kg)</th><th>Wheat (kg)</th><th>Sugar (kg)</th><th>Status</th></tr></thead>
-                <tbody>
-                    <tr><td>W1</td><td>Central Warehouse</td><td>1000</td><td>800</td><td>500</td><td>AVAILABLE</td></tr>
-                    <tr><td>W2</td><td>Regional Warehouse</td><td>600</td><td>500</td><td>300</td><td>AVAILABLE</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="warehouse-actions">
-            <span id="selected-warehouse">No warehouse selected</span>
-            <button class="bottom-action">Update selected warehouse stock</button>
-        </div>
-    </section>
-
-    <section id="shops" class="section">
-        <div class="table-scroll">
-            <table>
-                <thead><tr><th>Shop ID</th><th>Name</th><th>Location</th><th>Stock status</th></tr></thead>
-                <tbody>
-                    <tr><td>S1</td><td>Shop 1</td><td>Market Street</td><td>Ready for replenishment</td></tr>
-                    <tr><td>S2</td><td>Shop 2</td><td>Temple Road</td><td>Ready for replenishment</td></tr>
-                    <tr><td>S3</td><td>Shop 3</td><td>Bus Stand</td><td>Ready for replenishment</td></tr>
-                    <tr><td>S4</td><td>Shop 4</td><td>Panchayat Office</td><td>Ready for replenishment</td></tr>
-                    <tr><td>S5</td><td>Shop 5</td><td>River Side</td><td>Ready for replenishment</td></tr>
-                    <tr><td>S6</td><td>Shop 6</td><td>School Lane</td><td>Ready for replenishment</td></tr>
-                    <tr><td>S7</td><td>Shop 7</td><td>Hill View</td><td>Ready for replenishment</td></tr>
-                    <tr><td>S8</td><td>Shop 8</td><td>East Gate</td><td>Ready for replenishment</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <button class="bottom-action">Refresh</button>
-    </section>
-
-    <section id="vehicles" class="section">
-        <div class="table-scroll">
-            <table>
-                <thead><tr><th>Vehicle ID</th><th>Type</th><th>Capacity kg</th><th>Status</th></tr></thead>
-                <tbody id="vehicle-rows">
-                    <tr><td>V001</td><td>Small Van</td><td>500</td><td>AVAILABLE</td></tr>
-                    <tr><td>V002</td><td>Small Van</td><td>600</td><td>AVAILABLE</td></tr>
-                    <tr><td>V003</td><td>Supply Truck</td><td>2000</td><td>AVAILABLE</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <button class="bottom-action">Refresh</button>
-    </section>
-
-    <section id="new-request" class="section">
-        <fieldset>
-            <legend>Request details</legend>
-            <form id="request-form">
-                <label>Request ID<input name="id" required></label>
-                <label>Fair price shop<select name="shop">
-                    <option>S1</option><option>S2</option><option>S3</option><option>S4</option>
-                    <option>S5</option><option>S6</option><option>S7</option><option>S8</option>
-                </select></label>
-                <label>Urgency (1 low - 5 severe)<select name="urgency">
-                    <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-                </select></label>
-                <div class="item-entry">
-                    <label>Commodity / quantity (kg)<select id="commodity"><option>Rice</option><option>Wheat</option><option>Sugar</option></select></label>
-                    <label>Quantity<input id="quantity" type="number" min="1" value="100"></label>
-                    <button type="button" id="add-item">Add item</button>
+<div class="app-shell">
+    <!-- LEFT SIDEBAR NAVIGATION -->
+    <aside class="app-sidebar" id="app-sidebar">
+        <!-- Brand Header -->
+        <div class="sidebar-brand">
+            <div class="brand-icon">📦</div>
+            <div class="brand-text">
+                <h2>VALAM LOGISTICS</h2>
+                <div class="brand-badge-row">
+                    <span class="tag">District Command</span>
+                    <span class="sub-district">Valam PDS</span>
                 </div>
-                <label class="items-label">Items in request<textarea id="items-list" readonly></textarea></label>
-                <div class="form-buttons"><button type="button" id="clear-items">Clear items</button><button class="primary" type="submit">Submit request</button><span id="form-message"></span></div>
-            </form>
-        </fieldset>
-        <div class="help-box">How to use:<br>1. Enter a unique request ID (for example R019).<br>2. Choose a shop and urgency from 1 to 5.<br>3. Add one or more commodities and quantities in kilograms.<br>4. Submit, then open Requests to process the queue.<br><br>Allocation uses urgency ranking, stock availability, vehicle capacity and the shortest road route.</div>
+            </div>
+        </div>
+
+        <!-- Supabase Cloud Status & Settings -->
+        <div class="sidebar-status-pill-box">
+            <div class="status-badge" id="supabase-status-pill">
+                <span class="dot"></span>
+                <span>Supabase Live</span>
+            </div>
+            <button id="supabase-config-btn" class="sidebar-icon-btn" title="Configure Cloud Database">
+                <span>⚙️</span>
+            </button>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="sidebar-nav-container">
+            <!-- Operations Group -->
+            <div class="nav-group">
+                <span class="nav-group-title">MAIN OPERATIONS</span>
+                <button class="nav-item tab active" data-section="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Dashboard</span>
+                </button>
+                <button class="nav-item tab" data-section="requests">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">Delivery Requests</span>
+                    <span class="tab-badge" id="badge-requests-count">0</span>
+                </button>
+                <button class="nav-item tab nav-item-action" data-section="new-request">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-label">New Shortage Request</span>
+                </button>
+                <button class="nav-item tab" data-section="dispatches">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-label">Dispatches &amp; Receipts</span>
+                    <span class="tab-badge" id="badge-dispatches-count">0</span>
+                </button>
+            </div>
+
+            <!-- Supply Network Group -->
+            <div class="nav-group">
+                <span class="nav-group-title">SUPPLY NETWORK</span>
+                <button class="nav-item tab" data-section="warehouses">
+                    <span class="nav-icon">🏭</span>
+                    <span class="nav-label">Warehouses</span>
+                </button>
+                <button class="nav-item tab" data-section="shops">
+                    <span class="nav-icon">🏪</span>
+                    <span class="nav-label">Fair Price Shops</span>
+                </button>
+                <button class="nav-item tab" data-section="vehicles">
+                    <span class="nav-icon">🚚</span>
+                    <span class="nav-label">Vehicle Fleet</span>
+                </button>
+                <button class="nav-item tab" data-section="routes">
+                    <span class="nav-icon">🗺️</span>
+                    <span class="nav-label">Route Network (Dijkstra)</span>
+                </button>
+            </div>
+
+            <!-- Governance Group -->
+            <div class="nav-group">
+                <span class="nav-group-title">AUDIT &amp; RECORDS</span>
+                <button class="nav-item tab" data-section="history">
+                    <span class="nav-icon">📜</span>
+                    <span class="nav-label">Audit History</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar User Footer -->
+        <div class="sidebar-footer">
+            <div id="sidebar-user-widget" class="sidebar-user-widget">
+                <!-- Injected dynamically by JS -->
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN APP CANVAS (Topbar + Role Banner + Content) -->
+    <div class="app-main-canvas">
+        <!-- Modern Topbar -->
+        <header class="app-topbar">
+            <div class="topbar-left">
+                <div class="view-breadcrumb">
+                    <span class="view-icon" id="topbar-view-icon">📊</span>
+                    <div>
+                        <h2 class="view-title" id="topbar-view-title">Dashboard Overview</h2>
+                        <span class="view-subtitle" id="topbar-view-subtitle">Live district replenishment metrics &amp; allocation status</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <button id="header-process-next" class="btn-primary btn-sm" title="Process highest urgency request">
+                    <span>⚡</span> Process Next
+                </button>
+                <button id="header-process-all" class="btn-dark btn-sm" title="Process all queue requests">
+                    <span>🚀</span> Process All
+                </button>
+                <button id="reset-button" class="btn-secondary btn-sm" title="Reload live data">
+                    <span>🔄</span> Refresh
+                </button>
+            </div>
+        </header>
+
+        <!-- Connection Warning Banner (Shown only if unconfigured) -->
+        <div id="config-banner">
+            ⚠️ <strong>Supabase Connection Inactive:</strong> Connect your Supabase project to enable real-time cloud data sync.
+            <button id="banner-config-btn" class="btn-dark btn-sm">Configure Credentials</button>
+        </div>
+
+        <!-- Main Workspace -->
+        <main class="app-main-content">
+
+    <!-- ================= DASHBOARD SECTION ================= -->
+    <section id="dashboard" class="section active">
+        <!-- KPI Metrics Grid -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Waiting Requests</h3>
+                    <div class="kpi-value" id="kpi-pending-count">0</div>
+                    <div class="kpi-subtext" id="kpi-critical-subtext">0 critical priority</div>
+                </div>
+                <div class="kpi-icon-wrapper icon-amber">📋</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>In-Transit Cargo</h3>
+                    <div class="kpi-value" id="kpi-dispatched-count">0</div>
+                    <div class="kpi-subtext" id="kpi-dispatched-weight">0 kg on route</div>
+                </div>
+                <div class="kpi-icon-wrapper icon-blue">🚚</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Delivered Consignments</h3>
+                    <div class="kpi-value" id="kpi-delivered-count">0</div>
+                    <div class="kpi-subtext">Confirmed at shops</div>
+                </div>
+                <div class="kpi-icon-wrapper icon-green">✅</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Central Stock (W1)</h3>
+                    <div class="kpi-value" id="kpi-w1-total">0 kg</div>
+                    <div class="kpi-subtext">Rice, Wheat &amp; Sugar</div>
+                </div>
+                <div class="kpi-icon-wrapper icon-indigo">🏭</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Regional Stock (W2)</h3>
+                    <div class="kpi-value" id="kpi-w2-total">0 kg</div>
+                    <div class="kpi-subtext">Rice, Wheat &amp; Sugar</div>
+                </div>
+                <div class="kpi-icon-wrapper icon-blue">🏢</div>
+            </div>
+        </div>
+
+        <!-- 2-Column Operational Panels -->
+        <div class="dashboard-layout">
+            <!-- Left: Warehouse Inventory Utilization -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><span>🏭</span> Warehouse Inventory Reserves</div>
+                    <button class="btn-secondary btn-sm" onclick="switchTab('warehouses')">Manage Stock</button>
+                </div>
+                <div class="panel-body">
+                    <div class="stock-grid" id="dashboard-stock-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Activity & Dispatch Timeline -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><span>⏱️</span> Operational Timeline</div>
+                    <span class="badge badge-pending" id="queue-status-indicator">Queue Active</span>
+                </div>
+                <div class="panel-body">
+                    <ul class="timeline-feed" id="activity-timeline">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+            </div>
+        </div>
     </section>
 
+    <!-- ================= REQUESTS SECTION ================= -->
+    <section id="requests" class="section">
+        <div class="page-header">
+            <div>
+                <h2><span>📋</span> Shortage Delivery Requests</h2>
+                <div class="subtitle">Priority queue ordered by urgency (5 to 1), arrival time, and request ID</div>
+            </div>
+            <div class="action-bar">
+                <button id="process-next" class="btn-primary">
+                    <span>⚡</span> Process Next
+                </button>
+                <button id="process-all" class="btn-dark">
+                    <span>🚀</span> Process All
+                </button>
+                <button class="btn-secondary" onclick="switchTab('new-request')">
+                    <span>➕</span> Submit Request
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="toolbar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="requests-search" placeholder="Search by ID, shop, or commodity...">
+            </div>
+            <div class="filter-pills" id="requests-status-filters">
+                <button class="filter-pill active" data-filter="ALL">All (<span id="count-all">0</span>)</button>
+                <button class="filter-pill" data-filter="PENDING">Pending (<span id="count-pending">0</span>)</button>
+                <button class="filter-pill" data-filter="DISPATCHED">In Transit (<span id="count-dispatched">0</span>)</button>
+                <button class="filter-pill" data-filter="DELIVERED">Delivered (<span id="count-delivered">0</span>)</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Target Shop</th>
+                            <th>Urgency</th>
+                            <th>Commodities Required</th>
+                            <th>Total Load</th>
+                            <th>Status</th>
+                            <th>Routing / Pending Details</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="request-rows">
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= WAREHOUSES SECTION ================= -->
+    <section id="warehouses" class="section">
+        <div class="page-header">
+            <div>
+                <h2><span>🏭</span> District Warehouses</h2>
+                <div class="subtitle">Central and regional supply hubs with live commodity stock levels</div>
+            </div>
+        </div>
+
+        <div class="stock-grid" id="warehouses-cards-container" style="margin-bottom: 24px;">
+            <!-- Rendered by JS -->
+        </div>
+
+        <div class="table-container">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Warehouse ID</th>
+                            <th>Facility Name</th>
+                            <th>Rice Stock</th>
+                            <th>Wheat Stock</th>
+                            <th>Sugar Stock</th>
+                            <th>Total Reserves</th>
+                            <th>Operational Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="warehouse-table-rows">
+                        <!-- Rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= FAIR PRICE SHOPS SECTION ================= -->
+    <section id="shops" class="section">
+        <div class="page-header">
+            <div>
+                <h2><span>🏪</span> Fair Price Shops (FPS Network)</h2>
+                <div class="subtitle">8 distributed ration outlets across the Valam district</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Shop ID</th>
+                            <th>Facility Name</th>
+                            <th>Location / Street</th>
+                            <th>Rice on Hand</th>
+                            <th>Wheat on Hand</th>
+                            <th>Sugar on Hand</th>
+                            <th>Total Inventory</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shops-table-rows">
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= VEHICLES SECTION ================= -->
+    <section id="vehicles" class="section">
+        <div class="page-header">
+            <div>
+                <h2><span>🚚</span> Delivery Vehicle Fleet</h2>
+                <div class="subtitle">Vans and heavy trucks allocated based on request payload limits</div>
+            </div>
+        </div>
+
+        <div class="fleet-grid" id="fleet-grid-container">
+            <!-- Dynamic fleet cards -->
+        </div>
+    </section>
+
+    <!-- ================= ROUTE NETWORK (DIJKSTRA) SECTION ================= -->
+    <section id="routes" class="section">
+        <div class="page-header">
+            <div>
+                <h2><span>🗺️</span> Valam Road Network &amp; Shortest Path (Dijkstra)</h2>
+                <div class="subtitle">Interactive district map connecting warehouses, junctions, and fair price shops</div>
+            </div>
+            <div class="action-bar">
+                <button id="btn-unblock-roads" class="btn-secondary btn-sm" title="Reopen all closed road segments">
+                    <span>🛣️</span> Reopen All Roads
+                </button>
+                <button id="btn-clear-map" class="btn-secondary btn-sm" title="Clear current path and selections">
+                    <span>🔄</span> Reset Selection
+                </button>
+            </div>
+        </div>
+
+        <!-- Interactive Map Layout (Map + Inspector) -->
+        <div class="map-layout">
+            <!-- Map Card -->
+            <div class="map-card">
+                <div class="map-toolbar">
+                    <div class="map-title">
+                        <span>🧭</span> Network Route Planner
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                            <label style="font-weight: 700; color: var(--navy-800);">Origin:</label>
+                            <select id="route-calc-origin" class="form-control" style="width: auto; padding: 5px 10px;">
+                                <option value="W1">W1 - Central Warehouse</option>
+                                <option value="W2">W2 - Regional Warehouse</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                            <label style="font-weight: 700; color: var(--navy-800);">Destination:</label>
+                            <select id="route-calc-dest" class="form-control" style="width: auto; padding: 5px 10px;">
+                                <option value="S1">S1 - Bazaar FPS 1</option>
+                                <option value="S2">S2 - South FPS 2</option>
+                                <option value="S3">S3 - East FPS 3</option>
+                                <option value="S4">S4 - Lake Road FPS 4</option>
+                                <option value="S5" selected>S5 - North Hill FPS 5</option>
+                                <option value="S6">S6 - Cantonment FPS 6</option>
+                                <option value="S7">S7 - Hill View FPS 7</option>
+                                <option value="S8">S8 - East Gate FPS 8</option>
+                            </select>
+                        </div>
+                        <button id="btn-calc-route" class="btn-primary btn-sm">
+                            <span>🚀</span> Compute Route
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SVG Viewport -->
+                <div class="map-viewport" id="svg-map-wrapper">
+                    <!-- SVG rendered dynamically by JS -->
+                </div>
+
+                <!-- Map Legend -->
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#2563eb;"></span>
+                        <span>Warehouses (W1, W2)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#1e293b;"></span>
+                        <span>Junctions (J1 - J4)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#10b981;"></span>
+                        <span>Fair Price Shops (S1 - S8)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span style="display:inline-block;width:16px;height:3px;background:#2563eb;vertical-align:middle;"></span>
+                        <span>Active / Dijkstra Path</span>
+                    </div>
+                    <div class="legend-item">
+                        <span style="display:inline-block;width:16px;height:3px;background:#ef4444;border-top:1px dashed #ef4444;vertical-align:middle;"></span>
+                        <span>Blocked Road (Click to toggle)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inspector Side Drawer -->
+            <div class="map-inspector" id="map-inspector-panel">
+                <div class="inspector-header">
+                    <h4><span>🔍</span> Location Inspector</h4>
+                    <span class="badge badge-dispatched" id="inspector-badge">Ready</span>
+                </div>
+                <div class="inspector-body" id="inspector-content">
+                    <div class="empty-state" style="padding: 30px 10px;">
+                        <div class="empty-icon">📍</div>
+                        <div class="empty-text">Click any node or road</div>
+                        <div class="empty-subtext">Click any warehouse, junction, or shop on the map to inspect live data or click a road badge to simulate a blockage.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= NEW REQUEST SECTION ================= -->
+    <section id="new-request" class="section">
+        <div class="page-header">
+            <div>
+                <h2><span>➕</span> Submit Shortage Request</h2>
+                <div class="subtitle">Add a fair price shop shortage to the priority replenishment queue</div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <form id="request-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Request ID <span style="color:var(--danger)">*</span></label>
+                        <input name="id" class="form-control" placeholder="e.g. R003" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Fair Price Shop <span style="color:var(--danger)">*</span></label>
+                        <select name="shop" id="new-request-shop-select" class="form-control" required>
+                            <!-- Populated by JS -->
+                        </select>
+                        <div id="shop-lock-notice" class="shop-lock-notice" style="display:none;">
+                            <span>🔒</span> Locked to your assigned shop: <strong id="shop-lock-label"></strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Shortage Urgency Level <span style="color:var(--danger)">*</span></label>
+                    <div class="urgency-selector-grid" id="urgency-selector">
+                        <label class="urgency-card" data-level="1">
+                            <input type="radio" name="urgency" value="1">
+                            <span class="urgency-check">✓</span>
+                            <div class="urgency-level">Level 1</div>
+                            <div class="urgency-desc">Routine</div>
+                        </label>
+                        <label class="urgency-card" data-level="2">
+                            <input type="radio" name="urgency" value="2">
+                            <span class="urgency-check">✓</span>
+                            <div class="urgency-level">Level 2</div>
+                            <div class="urgency-desc">Low Stock</div>
+                        </label>
+                        <label class="urgency-card" data-level="3">
+                            <input type="radio" name="urgency" value="3">
+                            <span class="urgency-check">✓</span>
+                            <div class="urgency-level">Level 3</div>
+                            <div class="urgency-desc">Moderate</div>
+                        </label>
+                        <label class="urgency-card" data-level="4">
+                            <input type="radio" name="urgency" value="4">
+                            <span class="urgency-check">✓</span>
+                            <div class="urgency-level">Level 4</div>
+                            <div class="urgency-desc">High Priority</div>
+                        </label>
+                        <label class="urgency-card active" data-level="5">
+                            <input type="radio" name="urgency" value="5" checked>
+                            <span class="urgency-check">✓</span>
+                            <div class="urgency-level">Level 5</div>
+                            <div class="urgency-desc">Emergency</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="item-picker-box">
+                    <label style="font-size: 13px; font-weight: 700; margin-bottom: 8px; display: block;">Add Commodities to Request</label>
+                    <div class="item-picker-row">
+                        <div class="form-group" style="flex: 2; min-width: 150px;">
+                            <select id="commodity" class="form-control">
+                                <option value="Rice">🌾 Rice</option>
+                                <option value="Wheat">🥖 Wheat</option>
+                                <option value="Sugar">🍬 Sugar</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 2; min-width: 130px;">
+                            <input id="quantity" type="number" class="form-control" min="1" step="1" value="100" placeholder="Qty (kg)">
+                        </div>
+                        <button type="button" id="add-item" class="btn-secondary" style="height: 38px;">
+                            <span>➕</span> Add Commodity
+                        </button>
+                    </div>
+
+                    <div style="font-size: 12px; font-weight: 600; color: var(--navy-700); margin-bottom: 6px;">Items Manifest:</div>
+                    <div class="items-tag-container" id="items-tag-list">
+                        <span style="color: var(--text-muted); font-size: 12px;">No commodities added yet. Use the selector above.</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                    <div style="font-size: 14px; font-weight: 700; color: var(--navy-900);">
+                        Total Payload Weight: <span id="new-req-total-weight" style="color: var(--primary);">0.0 kg</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" id="clear-items" class="btn-secondary">Clear</button>
+                        <button type="submit" class="btn-primary btn-lg">
+                            <span>🚀</span> Submit to Priority Queue
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- ================= DISPATCHES & RECEIPTS SECTION ================= -->
     <section id="dispatches" class="section">
-        <div class="table-scroll dispatch-table"><table><thead><tr><th>Request ID</th><th>Shop</th><th>Vehicle</th><th>Delivery details</th></tr></thead><tbody id="dispatch-rows"></tbody></table></div>
-        <div class="bottom-actions"><button id="confirm-selected">Confirm selected receipt</button><button id="confirm-all">Confirm all receipts</button><button id="retry-pending">Retry pending requests</button></div>
+        <div class="page-header">
+            <div>
+                <h2><span>📦</span> Active Dispatches &amp; Receipt Confirmations</h2>
+                <div class="subtitle">Consignments currently in transit to shops via assigned vehicles</div>
+            </div>
+            <div class="action-bar">
+                <button id="confirm-all" class="btn-success">
+                    <span>✅</span> Confirm All Deliveries
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Destination Shop</th>
+                            <th>Assigned Fleet</th>
+                            <th>Cargo Manifest</th>
+                            <th>Route Navigation Path</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dispatch-rows">
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </section>
+
+    <!-- ================= AUDIT HISTORY SECTION ================= -->
     <section id="history" class="section">
-        <div class="table-scroll history-table"><table><thead><tr><th>Record</th><th>Details</th></tr></thead><tbody id="history-rows"></tbody></table></div>
+        <div class="page-header">
+            <div>
+                <h2><span>📜</span> Completed Delivery Audit Log</h2>
+                <div class="subtitle">Complete verifiable history of received consignments and fulfilled rations</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Receipt ID</th>
+                            <th>Consignment Request</th>
+                            <th>Delivered To</th>
+                            <th>Fulfillment Timestamp</th>
+                            <th>Audit Note</th>
+                            <th>Verification Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-rows">
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </section>
+
 </main>
+    </div> <!-- /.app-main-canvas -->
+</div> <!-- /.app-shell -->
+
+<!-- ================= ENTERPRISE MODALS ================= -->
+
+<!-- 1. Supabase Settings Modal -->
+<div id="supabase-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>⚡ Supabase Cloud Settings</h3>
+            <button class="modal-close" onclick="closeModal('supabase-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+                Configure your Supabase PostgreSQL credentials. Changes are stored safely in your browser's local cache.
+            </p>
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label>Supabase Project URL</label>
+                <input id="modal-supabase-url" type="text" class="form-control" placeholder="https://xyz.supabase.co">
+            </div>
+            <div class="form-group">
+                <label>Publishable / Anon API Key</label>
+                <input id="modal-supabase-key" type="password" class="form-control" placeholder="sb_publishable_... or eyJ...">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('supabase-modal')">Cancel</button>
+            <button id="modal-save-btn" class="btn-primary">Save &amp; Connect</button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Update Warehouse Stock Modal -->
+<div id="stock-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>🏭 Update Warehouse Inventory</h3>
+            <button class="modal-close" onclick="closeModal('stock-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="font-weight: 700; color: var(--navy-900); margin-bottom: 14px;" id="modal-warehouse-name">
+                Central Warehouse (W1)
+            </div>
+            <input type="hidden" id="modal-stock-warehouse-id">
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label>Select Commodity</label>
+                <select id="modal-stock-commodity" class="form-control">
+                    <option value="rice">Rice (kg)</option>
+                    <option value="wheat">Wheat (kg)</option>
+                    <option value="sugar">Sugar (kg)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>New Quantity in Stock (kg)</label>
+                <input id="modal-stock-quantity" type="number" min="0" step="10" class="form-control">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('stock-modal')">Cancel</button>
+            <button id="modal-save-stock-btn" class="btn-primary">Update In Supabase</button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Edit Request Urgency Modal -->
+<div id="urgency-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>🚨 Change Request Urgency</h3>
+            <button class="modal-close" onclick="closeModal('urgency-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="font-weight: 700; color: var(--navy-900); margin-bottom: 14px;" id="modal-urgency-req-title">
+                Request R001
+            </div>
+            <input type="hidden" id="modal-urgency-req-id">
+            <div class="form-group">
+                <label>Select New Urgency Rating</label>
+                <select id="modal-urgency-select" class="form-control">
+                    <option value="5">Level 5 - Emergency (Highest)</option>
+                    <option value="4">Level 4 - High Priority</option>
+                    <option value="3">Level 3 - Moderate</option>
+                    <option value="2">Level 2 - Low Stock</option>
+                    <option value="1">Level 1 - Routine</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('urgency-modal')">Cancel</button>
+            <button id="modal-save-urgency-btn" class="btn-primary">Save Urgency</button>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Authentication (Login & Sign Up) Modal -->
+<div id="auth-modal" class="modal-overlay">
+    <div class="modal-box auth-modal-box">
+        <div class="modal-header auth-modal-header">
+            <div class="auth-header-title">
+                <span class="auth-logo-badge">🏛️</span>
+                <div>
+                    <h3>Valam Logistics Access Portal</h3>
+                    <p class="auth-header-sub">Public Distribution System • District Supply Chain</p>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+        </div>
+
+        <!-- Navigation Tabs for Auth -->
+        <div class="auth-tab-bar">
+            <button class="auth-tab-btn active" id="auth-tab-login" onclick="switchAuthTab('login')">
+                <span>🔑</span> Sign In
+            </button>
+            <button class="auth-tab-btn" id="auth-tab-signup" onclick="switchAuthTab('signup')">
+                <span>✨</span> Create Account
+            </button>
+        </div>
+
+        <div class="modal-body auth-modal-body">
+            <!-- Inline Alert for Feedback -->
+            <div id="auth-alert" class="auth-alert" style="display: none;"></div>
+
+            <!-- TAB 1: SIGN IN PANE -->
+            <div id="auth-pane-login" class="auth-pane active">
+                <form id="form-login" onsubmit="handleLoginSubmit(event)">
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input id="login-username" type="text" class="form-control" placeholder="e.g. admin or dealer_s5" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <label for="login-password" style="margin:0;">Password</label>
+                            <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('login-password', this)">👁️ Show</button>
+                        </div>
+                        <input id="login-password" type="password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="login-remember" checked>
+                        <label for="login-remember" style="font-weight:normal; margin:0; cursor:pointer; font-size:12px; color:var(--text-secondary);">
+                            Keep me signed in on this computer
+                        </label>
+                    </div>
+                    <button type="submit" id="btn-login-submit" class="btn-primary auth-submit-btn">
+                        <span>🔑</span> Sign In
+                    </button>
+                </form>
+
+                <div class="auth-footer-prompt">
+                    Need a new account? <a href="javascript:void(0)" onclick="switchAuthTab('signup')">Register as Shop Dealer or Admin</a>
+                </div>
+            </div>
+
+            <!-- TAB 2: SIGN UP PANE -->
+            <div id="auth-pane-signup" class="auth-pane">
+                <form id="form-signup" onsubmit="handleSignupSubmit(event)">
+                    <div class="form-group">
+                        <label>Select Account Role <span style="color:var(--danger)">*</span></label>
+                        <div class="role-selector-grid">
+                            <label class="role-card-item active" id="role-card-dealer">
+                                <input type="radio" name="signup-role" value="SHOP_DEALER" checked onchange="handleRoleSelectionChange('SHOP_DEALER')">
+                                <div class="role-card-content">
+                                    <div class="role-card-top">
+                                        <span class="role-badge-icon">🏪</span>
+                                        <strong>Shop Dealer</strong>
+                                    </div>
+                                    <p>Submit shortages &amp; confirm delivery receipts for your assigned FPS shop.</p>
+                                </div>
+                            </label>
+                            <label class="role-card-item" id="role-card-admin">
+                                <input type="radio" name="signup-role" value="ADMIN" onchange="handleRoleSelectionChange('ADMIN')">
+                                <div class="role-card-content">
+                                    <div class="role-card-top">
+                                        <span class="role-badge-icon">👑</span>
+                                        <strong>Supply Officer (Admin)</strong>
+                                    </div>
+                                    <p>Full control over warehouse reserves, fleet allocation &amp; road network.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Assigned Shop Selector (Visible when role is SHOP_DEALER) -->
+                    <div class="form-group" id="signup-shop-wrapper">
+                        <label for="signup-shop-id">Assigned Fair Price Shop <span style="color:var(--danger)">*</span></label>
+                        <select id="signup-shop-id" class="form-control">
+                            <option value="S1">S1 - Bazaar FPS 1 (Market Street)</option>
+                            <option value="S2">S2 - South FPS 2 (Temple Road)</option>
+                            <option value="S3">S3 - East FPS 3 (River Colony)</option>
+                            <option value="S4">S4 - Lake Road FPS 4 (Lake Junction)</option>
+                            <option value="S5" selected>S5 - North Hill FPS 5 (Hill Post)</option>
+                            <option value="S6">S6 - Cantonment FPS 6 (Station Road)</option>
+                            <option value="S7">S7 - Hill View FPS 7 (Hill View)</option>
+                            <option value="S8">S8 - East Gate FPS 8 (East Gate)</option>
+                        </select>
+                        <small style="color:var(--text-muted); font-size:11px; margin-top:4px; display:block;">
+                            This dealer account will be bound to this ration outlet.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signup-fullname">Full Name <span style="color:var(--danger)">*</span></label>
+                        <input id="signup-fullname" type="text" class="form-control" placeholder="e.g. Ramesh Kumar or Priya Sharma" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1;">
+                            <label for="signup-username">Username <span style="color:var(--danger)">*</span></label>
+                            <input id="signup-username" type="text" class="form-control" placeholder="e.g. dealer_s4" required autocomplete="username">
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <label for="signup-password" style="margin:0;">Password <span style="color:var(--danger)">*</span></label>
+                                <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('signup-password', this)">👁️</button>
+                            </div>
+                            <input id="signup-password" type="password" class="form-control" placeholder="At least 6 characters" minlength="6" required autocomplete="new-password">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-signup-submit" class="btn-primary auth-submit-btn">
+                        <span>✨</span> Create Account &amp; Access System
+                    </button>
+                </form>
+
+                <div class="auth-footer-prompt">
+                    Already registered? <a href="javascript:void(0)" onclick="switchAuthTab('login')">Sign in to your account</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer auth-modal-footer">
+            <div class="auth-secure-badge">
+                <span>🛡️</span> Valam District Public Distribution System • Role-Based Access Control
+            </div>
+            <button class="btn-secondary btn-sm" onclick="closeAuthModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container"></div>
+
 <script src="assets/app.js"></script>
 </body>
 </html>
