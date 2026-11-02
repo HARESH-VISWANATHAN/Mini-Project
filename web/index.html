@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Valam | Public Distribution Supply Chain</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header>
+    <h1>VALAM&nbsp; / &nbsp;SUPPLY CHAIN CONTROL CENTER</h1>
+    <p>Public Distribution System&nbsp; • &nbsp;Inventory, dispatch and route management</p>
+    <button id="reset-button">Reset demo</button>
+</header>
+
+<nav class="tabs">
+    <button class="tab active" data-section="dashboard">Dashboard</button>
+    <button class="tab" data-section="warehouses">Warehouses</button>
+    <button class="tab" data-section="shops">Fair Price Shops</button>
+    <button class="tab" data-section="vehicles">Vehicles</button>
+    <button class="tab" data-section="requests">Requests</button>
+    <button class="tab" data-section="new-request">New Request</button>
+    <button class="tab" data-section="dispatches">Dispatch &amp; Receipts</button>
+    <button class="tab" data-section="history">History</button>
+</nav>
+
+<main>
+    <section id="dashboard" class="section active">
+        <div class="cards">
+            <div class="card"><strong>Warehouses</strong><b>2</b><small>Central + Regional</small></div>
+            <div class="card"><strong>Fair price shops</strong><b>8</b><small>Shop network</small></div>
+            <div class="card"><strong>Delivery vehicles</strong><b>3</b><small>2 vans + 1 truck</small></div>
+            <div class="card"><strong>Road locations</strong><b>14</b><small>Weighted graph</small></div>
+        </div>
+        <pre id="console-output"></pre>
+    </section>
+
+    <section id="requests" class="section">
+        <div class="section-heading">
+            <h2>Delivery Requests</h2>
+            <div><button id="process-next">Process next request</button><button id="process-all">Process all requests</button><button id="change-urgency">Change selected urgency</button></div>
+        </div>
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Request ID</th><th>Shop</th><th>Urgency</th><th>Items</th><th>Total kg</th><th>Status</th><th>Details</th></tr></thead>
+                <tbody id="request-rows"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="warehouses" class="section">
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>ID</th><th>Name</th><th>Rice (kg)</th><th>Wheat (kg)</th><th>Sugar (kg)</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td>W1</td><td>Central Warehouse</td><td>1000</td><td>800</td><td>500</td><td>AVAILABLE</td></tr>
+                    <tr><td>W2</td><td>Regional Warehouse</td><td>600</td><td>500</td><td>300</td><td>AVAILABLE</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="warehouse-actions">
+            <span id="selected-warehouse">No warehouse selected</span>
+            <button class="bottom-action">Update selected warehouse stock</button>
+        </div>
+    </section>
+
+    <section id="shops" class="section">
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Shop ID</th><th>Name</th><th>Location</th><th>Stock status</th></tr></thead>
+                <tbody>
+                    <tr><td>S1</td><td>Shop 1</td><td>Market Street</td><td>Ready for replenishment</td></tr>
+                    <tr><td>S2</td><td>Shop 2</td><td>Temple Road</td><td>Ready for replenishment</td></tr>
+                    <tr><td>S3</td><td>Shop 3</td><td>Bus Stand</td><td>Ready for replenishment</td></tr>
+                    <tr><td>S4</td><td>Shop 4</td><td>Panchayat Office</td><td>Ready for replenishment</td></tr>
+                    <tr><td>S5</td><td>Shop 5</td><td>River Side</td><td>Ready for replenishment</td></tr>
+                    <tr><td>S6</td><td>Shop 6</td><td>School Lane</td><td>Ready for replenishment</td></tr>
+                    <tr><td>S7</td><td>Shop 7</td><td>Hill View</td><td>Ready for replenishment</td></tr>
+                    <tr><td>S8</td><td>Shop 8</td><td>East Gate</td><td>Ready for replenishment</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="bottom-action">Refresh</button>
+    </section>
+
+    <section id="vehicles" class="section">
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Vehicle ID</th><th>Type</th><th>Capacity kg</th><th>Status</th></tr></thead>
+                <tbody id="vehicle-rows">
+                    <tr><td>V001</td><td>Small Van</td><td>500</td><td>AVAILABLE</td></tr>
+                    <tr><td>V002</td><td>Small Van</td><td>600</td><td>AVAILABLE</td></tr>
+                    <tr><td>V003</td><td>Supply Truck</td><td>2000</td><td>AVAILABLE</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="bottom-action">Refresh</button>
+    </section>
+
+    <section id="new-request" class="section">
+        <fieldset>
+            <legend>Request details</legend>
+            <form id="request-form">
+                <label>Request ID<input name="id" required></label>
+                <label>Fair price shop<select name="shop">
+                    <option>S1</option><option>S2</option><option>S3</option><option>S4</option>
+                    <option>S5</option><option>S6</option><option>S7</option><option>S8</option>
+                </select></label>
+                <label>Urgency (1 low - 5 severe)<select name="urgency">
+                    <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+                </select></label>
+                <div class="item-entry">
+                    <label>Commodity / quantity (kg)<select id="commodity"><option>Rice</option><option>Wheat</option><option>Sugar</option></select></label>
+                    <label>Quantity<input id="quantity" type="number" min="1" value="100"></label>
+                    <button type="button" id="add-item">Add item</button>
+                </div>
+                <label class="items-label">Items in request<textarea id="items-list" readonly></textarea></label>
+                <div class="form-buttons"><button type="button" id="clear-items">Clear items</button><button class="primary" type="submit">Submit request</button><span id="form-message"></span></div>
+            </form>
+        </fieldset>
+        <div class="help-box">How to use:<br>1. Enter a unique request ID (for example R019).<br>2. Choose a shop and urgency from 1 to 5.<br>3. Add one or more commodities and quantities in kilograms.<br>4. Submit, then open Requests to process the queue.<br><br>Allocation uses urgency ranking, stock availability, vehicle capacity and the shortest road route.</div>
+    </section>
+
+    <section id="dispatches" class="section">
+        <div class="table-scroll dispatch-table"><table><thead><tr><th>Request ID</th><th>Shop</th><th>Vehicle</th><th>Delivery details</th></tr></thead><tbody id="dispatch-rows"></tbody></table></div>
+        <div class="bottom-actions"><button id="confirm-selected">Confirm selected receipt</button><button id="confirm-all">Confirm all receipts</button><button id="retry-pending">Retry pending requests</button></div>
+    </section>
+    <section id="history" class="section">
+        <div class="table-scroll history-table"><table><thead><tr><th>Record</th><th>Details</th></tr></thead><tbody id="history-rows"></tbody></table></div>
+    </section>
+</main>
+<script src="assets/app.js"></script>
+</body>
+</html>

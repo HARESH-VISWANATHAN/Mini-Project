@@ -1,0 +1,51 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #edf1f6; color: #26323d; font: 14px Arial, sans-serif; }
+header { position: relative; padding: 22px 26px 18px; color: white; background: #172f50; border-bottom: 2px solid #7891ad; }
+h1 { margin: 0 0 6px; font-size: 24px; letter-spacing: .4px; }
+header p { margin: 0; color: #e0e8f2; }
+header button { position: absolute; top: 20px; right: 26px; }
+.tabs { display: flex; flex-wrap: wrap; padding: 0 4px; background: #dfe7f1; border-bottom: 1px solid #91a4ba; }
+button { padding: 8px 13px; color: #263b53; background: linear-gradient(#fff, #e2e9f1); border: 1px solid #91a4ba; cursor: pointer; font-weight: bold; }
+.tab { border-top: 0; border-radius: 0; margin-right: 2px; }
+.tab.active { background: #f8fafc; border-bottom-color: #f8fafc; }
+main { padding: 20px; }
+.section { display: none; }
+.section.active { display: block; }
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; margin-bottom: 14px; }
+.card, pre, form, .table-scroll { background: white; border: 1px solid #aebccc; }
+.card { padding: 18px; }
+.card strong, .card small { display: block; color: #526b88; }
+.card b { display: block; margin: 8px 0; color: #24629a; font-size: 30px; }
+pre { min-height: 280px; padding: 16px; white-space: pre-wrap; color: #27394d; font: 13px/1.65 "Courier New", monospace; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+h2 { color: #274766; }
+.table-scroll { max-height: 550px; overflow: auto; }
+table { width: 100%; min-width: 760px; border-collapse: collapse; }
+th, td { padding: 7px 6px; text-align: left; border: 1px solid #9eafc1; white-space: nowrap; }
+th { color: #31475f; text-align: center; background: #e7edf4; }
+.table-scroll tbody tr { cursor: pointer; }
+.table-scroll tbody tr:hover { background: #eef5fc; }
+.table-scroll tbody tr.selected-row { background: #cfe3f7; outline: 2px solid #24629a; outline-offset: -2px; }
+form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; padding: 18px; }
+label { color: #40546a; font-weight: bold; }
+input, select { display: block; width: 100%; margin-top: 5px; padding: 8px; border: 1px solid #aebccc; background: white; }
+.primary { color: white; background: #24629a; }
+#form-message { align-self: center; color: #1d6d43; font-weight: bold; }
+.bottom-action,.bottom-actions { margin-top: 14px; } .bottom-actions { display:flex; gap:8px; }
+.warehouse-actions { display:flex; align-items:center; gap:14px; }
+.warehouse-actions span { color:#274766; font-weight:bold; }
+.bottom-actions button { min-width: 185px; }
+fieldset { border:1px solid #b9c9d9; padding:14px 16px 16px; } legend { font-weight:bold; color:#344b64; padding:0 5px; }
+fieldset form { border:0; padding:4px 0 0; display:block; }
+fieldset form > label { display:grid; grid-template-columns:180px 1fr; align-items:center; margin:10px 0; }
+fieldset form > label input, fieldset form > label select { margin:0; }
+.item-entry { display:flex; align-items:end; gap:9px; margin:13px 0 16px; }
+.item-entry label:first-child { min-width:260px; } .item-entry label:nth-child(2) { width:110px; }
+.item-entry button { height:34px; } .items-label { display:grid; grid-template-columns:180px 1fr; align-items:start; }
+textarea { min-height:78px; resize:vertical; border:1px solid #aebccc; font:14px Arial; padding:8px; }
+.form-buttons { margin-left:190px; display:flex; align-items:center; gap:8px; } .help-box { margin-top:18px; padding:8px; background:#f5f7fa; line-height:1.55; }
+.dispatch-table,.history-table { min-height:555px; } .dispatch-table table,.history-table table { min-width:100%; }
+.pending { color: #253b52; font-weight: bold; }
+.dispatched { color: #1e5b98; font-weight: bold; }
+.delivered { color: #207044; font-weight: bold; }
+@media (max-width:800px) { .cards { grid-template-columns: repeat(2, 1fr); } .section-heading { align-items: flex-start; flex-direction: column; } fieldset form > label,.items-label { display:block; } .form-buttons { margin-left:0; } .item-entry { flex-wrap:wrap; } }
